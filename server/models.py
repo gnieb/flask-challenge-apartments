@@ -10,17 +10,23 @@ db = SQLAlchemy()
 class Apartment(db.Model, SerializerMixin):
     __tablename__ = 'apartments'
 
-    serialize_rules= ('-leases.apartment',)
+    serialize_rules= ('-leases',)
 
     id = db.Column(db.Integer, primary_key = True)
     number = db.Column(db.Integer, nullable = False)
 
     leases = db.relationship('Lease', backref='apartment')
 
+    @validates('number')
+    def validate_num(self, key, num):
+        if num < 1:
+            raise ValueError("Number is invalid")
+        return num
+
 class Tenant(db.Model, SerializerMixin):
     __tablename__ = 'tenants'
 
-    serialize_rules=('-leases.tenant',)
+    serialize_rules=('-leases',)
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)

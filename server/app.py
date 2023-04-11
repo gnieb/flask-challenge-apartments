@@ -99,11 +99,12 @@ api.add_resource(Tenants, '/tenants')
 
 class TenantById(Resource):
     def get(self, id):
-        tenant = Tenant.query.filter_by(id=id).first().to_dict()
-        if not tenant:
+        tenant = Tenant.query.filter_by(id=id).first()
+        if not tenant: 
             return make_response({"message": "tenant not found!"}, 404)
         
-        return make_response(tenant, 200)
+        t_dict = tenant.to_dict()
+        return make_response(t_dict, 200)
     
     def patch(self, id):
         tenant = Tenant.query.filter_by(id=id).first()
@@ -114,6 +115,7 @@ class TenantById(Resource):
             data = request.get_json()
             for key in data.keys():
                 setattr(tenant, key, data[key])
+
             db.session.add(tenant)
             db.session.commit()
         except:
@@ -130,7 +132,7 @@ class TenantById(Resource):
             db.session.commit()
         except:
             return make_response({"error":"unable to delete tenant"})
-        return make_response({"message": "tenant deleted!!!"})
+        return make_response({"message": "tenant deleted!!!"}, 204)
     
 api.add_resource(TenantById, '/tenants/<int:id>' )
     

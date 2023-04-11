@@ -26,13 +26,15 @@ class Apartment(db.Model, SerializerMixin):
 class Tenant(db.Model, SerializerMixin):
     __tablename__ = 'tenants'
 
-    serialize_rules=('-leases',)
+    serialize_rules=('-leases.tenant', '-leases.apartment')
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)
     age = db.Column(db.Integer)
 
     leases = db.relationship('Lease', backref='tenant')
+    apartments=association_proxy('leases', 'apartment')
+
 
     @validates('age')
     def validate_num(self, key, num):

@@ -66,6 +66,14 @@ class ApartmentById(Resource):
         return make_response(apartment.to_dict(), 202)
     
     def delete(self, id):
+        apartment = Apartment.query.filter_by(id=id).first()
+        if not apartment:
+            return make_response({"message":"apartment not found"})
+        
+        db.session.delete(apartment)
+        db.session.commit()
+
+        return make_response({"message": "apartment deleted"}, 202)
 
 api.add_resource(ApartmentById, '/apartments/<int:id>')
 
@@ -73,18 +81,92 @@ class Tenants(Resource):
     def get(self):
         tenants = [t.to_dict() for t in Tenant.query.all()]
 
+        return make_response(tenants, 200)
+
+    def post(self):
+
+        data = request.get_json()
+        try:
+            new_tenant = Tenant(name=data['name'], age=data['age'])
+            db.session.add(new_tenant)
+            db.session.commit()
+        except:
+            return make_response({"error":"unable to create new tenant!"}, 404)
+        
+        return make_response(new_tenant.to_dict(), 201)
 
 api.add_resource(Tenants, '/tenants')
+
+class TenantById(Resource):
+    def get(self, id):
+        tenant = Tenant.query.filter_by(id=id).first().to_dict()
+        if not tenant:
+            return make_response({"message": "tenant not found!"}, 404)
+        
+        return make_response(tenant, 200)
     
+    def patch(self, id):
+        tenant = Tenant.query.filter_by(id=id).first()
+        if not tenant:
+            return make_response({"message": "tenant not found!"}, 404)
+        
+        try:
+            data = request.get_json()
+            for key in data.keys():
+                setattr(tenant, key, data[key])
+            db.session.add(tenant)
+            db.session.commit()
+        except:
+            return make_response({"error":"unable to update tenant"}, 404)
+
+        return make_response(tenant.to_dict(), 201)
+    
+    def delete(self, id):
+        tenant = Tenant.query.filter_by(id=id).first()
+        if not tenant:
+            return make_response({"message": "tenant not found!"}, 404)
+        try:
+            db.session.delete(tenant)
+            db.session.commit()
+        except:
+            return make_response({"error":"unable to delete tenant"})
+        return make_response({"message": "tenant deleted!!!"})
+    
+api.add_resource(TenantById, '/tenants/<int:id>' )
+    
+class Leases(Resource):
+    def post(self):
+        data = request.get_json()
+        try:
+            new_lease= Lease(
+                rent=data['rent'], 
+                apartment_id=data['apartment_id'], 
+                tenant_id=data['tenant_id'] 
+                )
+            db.session.add(new_lease)
+            db.session.commit()
+        except:
+            return make_response({"error":"unable to create new lease"}, 404)
+        return make_response(new_lease.to_dict(), 201)
 
 
+api.add_resource(Leases, '/leases')
 
+class LeaseById(Resource):
+    def delete(self, id):
+        lease = Lease.query.filter_by(id=id).first()
+        if not lease:
+            return make_response({"error":"lease not found!"}, 404)
+        
+        try:
+            db.session.delete(lease)
+            db.session.commit()
+        except:
+            return make_response({"error": "unable to delete!"})
 
-
-
-
-
-
+        return make_response({"message":"lease deleted"})
+    
+api.add_resource(LeaseById,'/leases/<int:id>')
 
 if __name__ == '__main__':
     app.run( port = 3000, debug = True )

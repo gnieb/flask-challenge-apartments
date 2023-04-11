@@ -34,6 +34,12 @@ class Tenant(db.Model, SerializerMixin):
 
     leases = db.relationship('Lease', backref='tenant')
 
+    @validates('age')
+    def validate_num(self, key, num):
+        if num < 18:
+            raise ValueError("Age must be 18 or older!")
+        return num    
+
 class Lease(db.Model, SerializerMixin):
     __tablename__ = 'leases'
 

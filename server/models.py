@@ -14,8 +14,8 @@ class Apartment(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key = True)
     number = db.Column(db.Integer, nullable = False)
-
     leases = db.relationship('Lease', backref='apartment')
+    tenants = association_proxy('leases', 'tenant')
 
     @validates('number')
     def validate_num(self, key, num):
@@ -49,3 +49,5 @@ class Lease(db.Model, SerializerMixin):
     rent = db.Column(db.Integer, nullable=False)
     apartment_id = db.Column(db.Integer, db.ForeignKey('apartments.id'))
     tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'))
+
+

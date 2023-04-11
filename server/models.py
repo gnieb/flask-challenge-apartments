@@ -30,7 +30,7 @@ class Tenant(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)
-    age = db.Column(db.Integer, db.CheckConstraint ('age >= 18'))
+    age = db.Column(db.Integer)
 
     leases = db.relationship('Lease', backref='tenant')
 
